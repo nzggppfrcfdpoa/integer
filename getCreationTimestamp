@@ -1,0 +1,53 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract EnhancedStorageETH is Ownable {
+    string private storedData;
+    uint256 private creationTimestamp;
+    bool private isLocked;
+
+    event DataStored(address indexed user, string data);
+    event DataDeleted(address indexed deleter);
+
+    modifier notLocked() {
+        require(!isLocked, "Contract is locked and data cannot be modified");
+        _;
+    }
+
+    constructor() {
+        creationTimestamp = block.timestamp;
+        isLocked = false;
+    }
+
+    function set(string memory newData) external onlyOwner notLocked {
+        storedData = newData;
+        emit DataStored(msg.sender, newData);
+    }
+
+    function get() external view returns (string memory) {
+        return storedData;
+    }
+
+    function deleteData() external onlyOwner notLocked {
+        delete storedData;
+        emit DataDeleted(msg.sender);
+    }
+
+    function lockContract() external onlyOwner {
+        isLocked = true;
+    }
+
+    function unlockContract() external onlyOwner {
+        isLocked = false;
+    }
+
+    function getCreationTimestamp() external view returns (uint256) {
+        return creationTimestamp;
+    }
+
+    function isContractLocked() external view returns (bool) {
+        return isLocked;
+    }
+}
